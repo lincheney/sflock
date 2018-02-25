@@ -94,6 +94,7 @@ main(int argc, char **argv) {
     char* username = "";
     int showline = 1;
     int xshift = 0;
+    int daemon = 0;
     char* normal_bg_color = "black";
     char* error_bg_color = "orange red";
 
@@ -121,7 +122,10 @@ main(int argc, char **argv) {
                 die("error: missing xshift value\n");
             xshift = atoi(argv[i + 1]);
 
-        } else if (!strcmp(argv[i], "-bg")) {
+        } else if (!strcmp(argv[i], "-d"))
+            daemon = 1;
+
+        else if (!strcmp(argv[i], "-bg")) {
             if (i+1 == argc)
                 die("error: missing bg value\n");
             normal_bg_color = argv[i + 1];
@@ -132,7 +136,7 @@ main(int argc, char **argv) {
             error_bg_color = argv[i + 1];
 
         } else if (!strcmp(argv[i], "?"))
-            die("usage: sflock [-v] [-c passchars] [-f fontname] [-xshift horizontal shift] [-bg bg] [-errorbg errorbg]\n");
+            die("usage: sflock [-v] [-d] [-c passchars] [-f fontname] [-xshift horizontal shift] [-bg bg] [-errorbg errorbg]\n");
     }
 
     // fill with password characters
@@ -151,11 +155,13 @@ main(int argc, char **argv) {
     }
 
     /* deamonize */
-    pid = fork();
-    if (pid < 0)
-        die("Could not fork sflock.");
-    if (pid > 0)
-        exit(0); // exit parent
+    if (daemon) {
+        pid = fork();
+        if (pid < 0)
+            die("Could not fork sflock.");
+        if (pid > 0)
+            exit(0); // exit parent
+    }
 
 #ifndef HAVE_BSD_AUTH
     pws = get_password();
