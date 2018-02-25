@@ -81,7 +81,7 @@ main(int argc, char **argv) {
     KeySym ksym;
     Pixmap pmap;
     Window root, w;
-    XColor black, red, dummy;
+    XColor normal_bg, error_bg, dummy;
     XEvent ev;
     XSetWindowAttributes wa;
     XFontStruct* font;
@@ -94,6 +94,8 @@ main(int argc, char **argv) {
     char* username = "";
     int showline = 1;
     int xshift = 0;
+    char* normal_bg_color = "black";
+    char* error_bg_color = "orange red";
 
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "-c")) {
@@ -101,28 +103,36 @@ main(int argc, char **argv) {
                 passchar = argv[i + 1];
             else
                 die("error: no password character given.\n");
-        } else
-            if (!strcmp(argv[i], "-f")) {
-                if (i + 1 < argc)
-                    fontname = argv[i + 1];
-                else
-                    die("error: font not specified.\n");
-            }
+
+        } else if (!strcmp(argv[i], "-f")) {
+            if (i + 1 < argc)
+                fontname = argv[i + 1];
             else
-                if (!strcmp(argv[i], "-v"))
-                    die("sflock-"VERSION", © 2015 Ben Ruijl\n");
-                else
-                    if (!strcmp(argv[i], "-h"))
-                        showline = 0;
-                    else
-                        if (!strcmp(argv[i], "-xshift")) {
-                            if (i+1 == argc)
-                                die("error: missing xshift value\n");
-                            xshift = atoi(argv[i + 1]);
-                        }
-                        else
-                            if (!strcmp(argv[i], "?"))
-                                die("usage: sflock [-v] [-c passchars] [-f fontname] [-xshift horizontal shift]\n");
+                die("error: font not specified.\n");
+
+        } else if (!strcmp(argv[i], "-v"))
+            die("sflock-"VERSION", © 2015 Ben Ruijl\n");
+
+        else if (!strcmp(argv[i], "-h"))
+            showline = 0;
+
+        else if (!strcmp(argv[i], "-xshift")) {
+            if (i+1 == argc)
+                die("error: missing xshift value\n");
+            xshift = atoi(argv[i + 1]);
+
+        } else if (!strcmp(argv[i], "-bg")) {
+            if (i+1 == argc)
+                die("error: missing bg value\n");
+            normal_bg_color = argv[i + 1];
+
+        } else if (!strcmp(argv[i], "-errorbg")) {
+            if (i+1 == argc)
+                die("error: missing error bg value\n");
+            error_bg_color = argv[i + 1];
+
+        } else if (!strcmp(argv[i], "?"))
+            die("usage: sflock [-v] [-c passchars] [-f fontname] [-xshift horizontal shift] [-bg bg] [-errorbg errorbg]\n");
     }
 
     // fill with password characters
@@ -162,16 +172,17 @@ main(int argc, char **argv) {
     width = DisplayWidth(dpy, screen);
     height = DisplayHeight(dpy, screen);
 
+    XAllocNamedColor(dpy, DefaultColormap(dpy, screen), error_bg_color, &error_bg, &dummy);
+    XAllocNamedColor(dpy, DefaultColormap(dpy, screen), normal_bg_color, &normal_bg, &dummy);
+
     wa.override_redirect = 1;
-    wa.background_pixel = XBlackPixel(dpy, screen);
+    wa.background_pixel = normal_bg.pixel;
     w = XCreateWindow(dpy, root, 0, 0, width, height,
             0, DefaultDepth(dpy, screen), CopyFromParent,
             DefaultVisual(dpy, screen), CWOverrideRedirect | CWBackPixel, &wa);
 
-    XAllocNamedColor(dpy, DefaultColormap(dpy, screen), "orange red", &red, &dummy);
-    XAllocNamedColor(dpy, DefaultColormap(dpy, screen), "black", &black, &dummy);
     pmap = XCreateBitmapFromData(dpy, w, curs, 8, 8);
-    invisible = XCreatePixmapCursor(dpy, pmap, pmap, &black, &black, 0, 0);
+    invisible = XCreatePixmapCursor(dpy, pmap, pmap, &normal_bg, &normal_bg, 0, 0);
     XDefineCursor(dpy, w, invisible);
     XMapRaised(dpy, w);
 
@@ -262,7 +273,7 @@ main(int argc, char **argv) {
 #endif
                     if (running != 0)
                         // change background on wrong password
-                        XSetWindowBackground(dpy, w, red.pixel);
+                        XSetWindowBackground(dpy, w, error_bg.pixel);
                     len = 0;
                     break;
                 case XK_Escape:
