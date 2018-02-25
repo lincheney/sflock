@@ -298,6 +298,7 @@ main(int argc, char **argv) {
                     if(num && !iscntrl((int) buf[0]) && (len + num < sizeof passwd)) {
                         memcpy(passwd + len, buf, num);
                         len += num;
+                        XSetWindowBackground(dpy, w, normal_bg.pixel);
                     }
 
                     break;
