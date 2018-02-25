@@ -93,6 +93,7 @@ main(int argc, char **argv) {
     char* fontname = "fixed";
     char* username = "";
     int showline = 1;
+    int showusername = 1;
     int xshift = 0;
     int daemon = 0;
     char* normal_bg_color = "black";
@@ -116,6 +117,9 @@ main(int argc, char **argv) {
 
         else if (!strcmp(argv[i], "-h"))
             showline = 0;
+
+        else if (!strcmp(argv[i], "-u"))
+            showusername = 0;
 
         else if (!strcmp(argv[i], "-xshift")) {
             if (i+1 == argc)
@@ -240,7 +244,8 @@ main(int argc, char **argv) {
             x = (width - overall.width) / 2;
             y = (height + ascent - descent) / 2;
 
-            XDrawString(dpy,w,gc, (width - XTextWidth(font, username, strlen(username))) / 2 + xshift, y - ascent - 20, username, strlen(username));
+            if (showusername)
+                XDrawString(dpy,w,gc, (width - XTextWidth(font, username, strlen(username))) / 2 + xshift, y - ascent - 20, username, strlen(username));
 
             if (showline)
                 XDrawLine(dpy, w, gc, width * 3 / 8 + xshift, y - ascent - 10, width * 5 / 8 + xshift, y - ascent - 10);
