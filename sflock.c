@@ -174,9 +174,8 @@ main(int argc, char **argv) {
     }
 
     // fill with password characters
-    for (int i = 0; i < sizeof passdisp; i+= strlen(passchar))
-        for (int j = 0; j < strlen(passchar) && i + j < sizeof passdisp; j++)
-            passdisp[i + j] = passchar[j];
+    for (int i = 0, passchar_len = strlen(passchar); i < sizeof passdisp; i++)
+        passdisp[i] = passchar[i % passchar_len];
 
 
     /* disable tty switching */
