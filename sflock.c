@@ -259,17 +259,22 @@ main(int argc, char **argv) {
         if (update) {
             int x, y, dir, ascent, descent;
             unsigned int disp_len = randchars ? randchars : len;
-            char* offset = passdisp + (randchars ? (rand() % (sizeof(passdisp) - disp_len)) : 0);
+            char* passstr = passdisp + (randchars ? (rand() % (sizeof(passdisp) - disp_len)) : 0);
             XCharStruct overall;
 
+#define draw_text_centered(text, len, y) \
+            do { \
+                XftTextExtentsUtf8(dpy, font, (XftChar8 *)text, len, &extents); \
+                XftDrawStringUtf8(xftdraw, &xftcolor, font, (width - extents.width) / 2, y, (XftChar8 *)text, len); \
+            } while(0)
+
             XClearWindow(dpy, w);
-            /* if (showusername) */
-                /* XDrawString(dpy,w,gc, (width - XTextWidth(font, username, strlen(username))) / 2 + xshift, y - ascent - 20, username, strlen(username)); */
+            if (showusername)
+                draw_text_centered(username, strlen(username), (height-20)/2);
 
             if (showline)
                 XDrawLine(dpy, w, gc, width * 3 / 8 , height / 2, width * 5 / 8, height / 2);
-            XftTextExtentsUtf8(dpy, font, (XftChar8 *)offset, disp_len, &extents);
-            XftDrawStringUtf8(xftdraw, &xftcolor, font, (width - extents.width) / 2, (height+42) / 2, (XftChar8 *)offset, disp_len);
+            draw_text_centered(passstr, disp_len, (height+42)/2);
             update = False;
         }
 
