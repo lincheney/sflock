@@ -78,7 +78,7 @@ main(int argc, char **argv) {
     const char *pws;
 #endif
     unsigned int len;
-    unsigned int wrong_time;
+    time_t wrong_time;
     Bool running = True;
     Cursor invisible;
     Display *dpy;
@@ -101,7 +101,6 @@ main(int argc, char **argv) {
     char* username = "";
     int showline = 1;
     int showusername = 1;
-    int xshift = 0;
     int daemon = 0;
     int randchars = 0;
     unsigned int wrong_timeout = 0;
@@ -146,11 +145,6 @@ main(int argc, char **argv) {
             wrong_timeout = atoi(argv[i + 1]);
             wrong_timeout = wrong_timeout>0 ? wrong_timeout : 0;
 
-        } else if (!strcmp(argv[i], "-xshift")) {
-            if (i+1 == argc)
-                die("error: missing xshift value\n");
-            xshift = atoi(argv[i + 1]);
-
         } else if (!strcmp(argv[i], "-fg")) {
             if (i+1 == argc)
                 die("error: missing fg value\n");
@@ -171,7 +165,6 @@ main(int argc, char **argv) {
                 "           [-v] [-d] [-h] [-u]\n"
                 "           [-c passchars]\n"
                 "           [-f fontname]\n"
-                "           [-xshift horizontal shift]\n"
                 "           [-fg fg]\n"
                 "           [-bg bg]\n"
                 "           [-errorbg errorbg]\n"
@@ -275,10 +268,8 @@ main(int argc, char **argv) {
         }
 
         if (update) {
-            int x, y, dir, ascent, descent;
             unsigned int disp_len = (randchars && len) ? randchars : len;
             char* passstr = passdisp + ((randchars && len) ? (rand() % (sizeof(passdisp) - disp_len)) : 0);
-            XCharStruct overall;
 
 #define draw_text_centered(text, len, y) \
             do { \
