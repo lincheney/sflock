@@ -17,10 +17,12 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <termios.h>
+#include <fontconfig/fontconfig.h>
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/dpms.h>
+#include <X11/Xft/Xft.h>
 
 #if HAVE_BSD_AUTH
 #include <login_cap.h>
@@ -84,7 +86,10 @@ main(int argc, char **argv) {
     XColor fg, normal_bg, error_bg, dummy;
     XEvent ev;
     XSetWindowAttributes wa;
-    XFontStruct* font;
+    XftFont *font;
+    XftColor xftcolor;
+    XftDraw *xftdraw;
+    XGlyphInfo extents;
     GC gc;
     XGCValues values;
 
@@ -203,14 +208,15 @@ main(int argc, char **argv) {
     XDefineCursor(dpy, w, invisible);
     XMapRaised(dpy, w);
 
-    font = XLoadQueryFont(dpy, fontname);
+    xftdraw = XftDrawCreate(dpy, w, DefaultVisual(dpy, screen), DefaultColormap(dpy, screen));
+    font = XftFontOpenName(dpy, screen, fontname);
+    XftColorAllocName(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy, screen), "white", &xftcolor);
 
     if (font == 0) {
         die("error: could not find font. Try using a full description.\n");
     }
 
     gc = XCreateGC(dpy, w, (unsigned long)0, &values);
-    XSetFont(dpy, gc, font->fid);
     XSetForeground(dpy, gc, fg.pixel);
 
     for(len = 1000; len; len--) {
@@ -247,17 +253,13 @@ main(int argc, char **argv) {
             XCharStruct overall;
 
             XClearWindow(dpy, w);
-            XTextExtents (font, passdisp, len, &dir, &ascent, &descent, &overall);
-            x = (width - overall.width) / 2;
-            y = (height + ascent - descent) / 2;
-
-            if (showusername)
-                XDrawString(dpy,w,gc, (width - XTextWidth(font, username, strlen(username))) / 2 + xshift, y - ascent - 20, username, strlen(username));
+            /* if (showusername) */
+                /* XDrawString(dpy,w,gc, (width - XTextWidth(font, username, strlen(username))) / 2 + xshift, y - ascent - 20, username, strlen(username)); */
 
             if (showline)
-                XDrawLine(dpy, w, gc, width * 3 / 8 + xshift, y - ascent - 10, width * 5 / 8 + xshift, y - ascent - 10);
-
-            XDrawString(dpy,w,gc, x + xshift, y, passdisp, len);
+                XDrawLine(dpy, w, gc, width * 3 / 8 , height / 2, width * 5 / 8, height / 2);
+            XftTextExtentsUtf8(dpy, font, (XftChar8 *)passdisp, len, &extents);
+            XftDrawStringUtf8(xftdraw, &xftcolor, font, (width - extents.width) / 2, (height+42) / 2, (XftChar8 *)passdisp, len);
             update = False;
         }
 
@@ -332,7 +334,9 @@ main(int argc, char **argv) {
 
     XUngrabPointer(dpy, CurrentTime);
     XFreePixmap(dpy, pmap);
-    XFreeFont(dpy, font);
+    XftFontClose(dpy, font);
+    XftColorFree(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy, screen), &xftcolor);
+    XftDrawDestroy(xftdraw);
     XFreeGC(dpy, gc);
     XDestroyWindow(dpy, w);
     XCloseDisplay(dpy);
