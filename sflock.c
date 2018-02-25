@@ -14,8 +14,8 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <linux/vt.h>
-#include <fcntl.h> 
-#include <errno.h> 
+#include <fcntl.h>
+#include <errno.h>
 #include <termios.h>
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -85,48 +85,48 @@ main(int argc, char **argv) {
     XEvent ev;
     XSetWindowAttributes wa;
     XFontStruct* font;
-    GC gc; 
+    GC gc;
     XGCValues values;
 
     // defaults
     char* passchar = "*";
-    char* fontname = "-*-dejavu sans-bold-r-*-*-*-420-100-100-*-*-iso8859-1";
-    char* username = ""; 
+    char* fontname = "fixed";
+    char* username = "";
     int showline = 1;
     int xshift = 0;
 
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "-c")) {
-            if (i + 1 < argc) 
+            if (i + 1 < argc)
                 passchar = argv[i + 1];
             else
                 die("error: no password character given.\n");
         } else
             if (!strcmp(argv[i], "-f")) {
-                if (i + 1 < argc) 
+                if (i + 1 < argc)
                     fontname = argv[i + 1];
                 else
                     die("error: font not specified.\n");
             }
             else
-                if (!strcmp(argv[i], "-v")) 
+                if (!strcmp(argv[i], "-v"))
                     die("sflock-"VERSION", © 2015 Ben Ruijl\n");
-                else 
-                    if (!strcmp(argv[i], "-h")) 
+                else
+                    if (!strcmp(argv[i], "-h"))
                         showline = 0;
-                    else 
+                    else
                         if (!strcmp(argv[i], "-xshift")) {
                             if (i+1 == argc)
                                 die("error: missing xshift value\n");
                             xshift = atoi(argv[i + 1]);
                         }
-                        else 
+                        else
                             if (!strcmp(argv[i], "?"))
                                 die("usage: sflock [-v] [-c passchars] [-f fontname] [-xshift horizontal shift]\n");
     }
 
     // fill with password characters
-    for (int i = 0; i < sizeof passdisp; i+= strlen(passchar)) 
+    for (int i = 0; i < sizeof passdisp; i+= strlen(passchar))
         for (int j = 0; j < strlen(passchar) && i + j < sizeof passdisp; j++)
             passdisp[i + j] = passchar[j];
 
@@ -137,15 +137,15 @@ main(int argc, char **argv) {
     }
 
     if ((ioctl(term, VT_LOCKSWITCH)) == -1) {
-        perror("error locking console"); 
+        perror("error locking console");
     }
 
     /* deamonize */
     pid = fork();
-    if (pid < 0) 
+    if (pid < 0)
         die("Could not fork sflock.");
-    if (pid > 0) 
-        exit(0); // exit parent 
+    if (pid > 0)
+        exit(0); // exit parent
 
 #ifndef HAVE_BSD_AUTH
     pws = get_password();
@@ -278,7 +278,7 @@ main(int argc, char **argv) {
                         --len;
                     break;
                 default:
-                    if(num && !iscntrl((int) buf[0]) && (len + num < sizeof passwd)) { 
+                    if(num && !iscntrl((int) buf[0]) && (len + num < sizeof passwd)) {
                         memcpy(passwd + len, buf, num);
                         len += num;
                     }
@@ -293,7 +293,7 @@ main(int argc, char **argv) {
     /* free and unlock */
     setreuid(geteuid(), 0);
     if ((ioctl(term, VT_UNLOCKSWITCH)) == -1) {
-        perror("error unlocking console"); 
+        perror("error unlocking console");
     }
 
     close(term);
