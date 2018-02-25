@@ -270,11 +270,11 @@ main(int argc, char **argv) {
 
             XClearWindow(dpy, w);
             if (showusername)
-                draw_text_centered(username, strlen(username), (height-20)/2);
+                draw_text_centered(username, strlen(username), height/2 - 10);
 
             if (showline)
                 XDrawLine(dpy, w, gc, width * 3 / 8 , height / 2, width * 5 / 8, height / 2);
-            draw_text_centered(passstr, disp_len, (height+42)/2);
+            draw_text_centered(passstr, disp_len, height/2 + font->height - 10);
             update = False;
         }
 
