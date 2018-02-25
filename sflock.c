@@ -84,7 +84,7 @@ main(int argc, char **argv) {
     KeySym ksym;
     Pixmap pmap;
     Window root, w;
-    XColor fg, normal_bg, error_bg, dummy;
+    XColor normal_bg, error_bg, dummy;
     XEvent ev;
     XSetWindowAttributes wa;
     XftFont *font;
@@ -203,7 +203,6 @@ main(int argc, char **argv) {
 
     XAllocNamedColor(dpy, DefaultColormap(dpy, screen), error_bg_color, &error_bg, &dummy);
     XAllocNamedColor(dpy, DefaultColormap(dpy, screen), normal_bg_color, &normal_bg, &dummy);
-    XAllocNamedColor(dpy, DefaultColormap(dpy, screen), fg_color, &fg, &dummy);
 
     wa.override_redirect = 1;
     wa.background_pixel = normal_bg.pixel;
@@ -218,14 +217,14 @@ main(int argc, char **argv) {
 
     xftdraw = XftDrawCreate(dpy, w, DefaultVisual(dpy, screen), DefaultColormap(dpy, screen));
     font = XftFontOpenName(dpy, screen, fontname);
-    XftColorAllocName(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy, screen), "white", &xftcolor);
+    XftColorAllocName(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy, screen), fg_color, &xftcolor);
 
     if (font == 0) {
         die("error: could not find font. Try using a full description.\n");
     }
 
     gc = XCreateGC(dpy, w, (unsigned long)0, &values);
-    XSetForeground(dpy, gc, fg.pixel);
+    XSetForeground(dpy, gc, xftcolor.pixel);
 
     for(len = 1000; len; len--) {
         if(XGrabPointer(dpy, root, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
