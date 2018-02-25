@@ -258,8 +258,8 @@ main(int argc, char **argv) {
 
         if (update) {
             int x, y, dir, ascent, descent;
-            unsigned int disp_len = randchars ? randchars : len;
-            char* passstr = passdisp + (randchars ? (rand() % (sizeof(passdisp) - disp_len)) : 0);
+            unsigned int disp_len = (randchars && len) ? randchars : len;
+            char* passstr = passdisp + ((randchars && len) ? (rand() % (sizeof(passdisp) - disp_len)) : 0);
             XCharStruct overall;
 
 #define draw_text_centered(text, len, y) \
