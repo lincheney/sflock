@@ -97,7 +97,7 @@ main(int argc, char **argv) {
 
     // defaults
     char* passchar = "*";
-    char* fontname = "fixed";
+    char* fontname = "monospace";
     char* username = "";
     int showline = 1;
     int showusername = 1;
@@ -292,7 +292,7 @@ main(int argc, char **argv) {
 
             if (showline)
                 XDrawLine(dpy, w, gc, width * 3 / 8 , height / 2, width * 5 / 8, height / 2);
-            draw_text_centered(passstr, disp_len, height/2 + font->height - 10);
+            draw_text_centered(passstr, disp_len, height/2 + font->height);
             update = False;
         }
 
