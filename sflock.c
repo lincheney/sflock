@@ -78,6 +78,7 @@ main(int argc, char **argv) {
     const char *pws;
 #endif
     unsigned int len;
+    unsigned int wrong_time;
     Bool running = True;
     Cursor invisible;
     Display *dpy;
@@ -103,6 +104,7 @@ main(int argc, char **argv) {
     int xshift = 0;
     int daemon = 0;
     int randchars = 0;
+    unsigned int wrong_timeout = 0;
     char* normal_bg_color = "black";
     char* error_bg_color = "orange red";
     char* fg_color = "white";
@@ -137,6 +139,12 @@ main(int argc, char **argv) {
                 die("error: missing randchars value\n");
             randchars = atoi(argv[i + 1]);
             srand(time(NULL));
+
+        } else if (!strcmp(argv[i], "-timeout")) {
+            if (i+1 == argc)
+                die("error: missing timeout value\n");
+            wrong_timeout = atoi(argv[i + 1]);
+            wrong_timeout = wrong_timeout>0 ? wrong_timeout : 0;
 
         } else if (!strcmp(argv[i], "-xshift")) {
             if (i+1 == argc)
@@ -243,6 +251,7 @@ main(int argc, char **argv) {
     }
 
     len = 0;
+    wrong_time = 0;
     XSync(dpy, False);
     update = True;
     sleepmode = False;
@@ -297,6 +306,9 @@ main(int argc, char **argv) {
                     || IsPrivateKeypadKey(ksym))
                 continue;
 
+            if (wrong_time + wrong_timeout > time(NULL))
+                continue;
+
             switch(ksym) {
                 case XK_Return:
                     passwd[len] = 0;
@@ -309,6 +321,7 @@ main(int argc, char **argv) {
                         // change background on wrong password
                         XSetWindowBackground(dpy, w, error_bg.pixel);
                     len = 0;
+                    time(&wrong_time);
                     break;
                 case XK_Escape:
                     len = 0;
