@@ -167,7 +167,17 @@ main(int argc, char **argv) {
             error_bg_color = argv[i + 1];
 
         } else if (!strcmp(argv[i], "?"))
-            die("usage: sflock [-v] [-d] [-c passchars] [-f fontname] [-xshift horizontal shift] [-bg bg] [-errorbg errorbg]\n");
+            die("usage: sflock\n"
+                "           [-v] [-d] [-h] [-u]\n"
+                "           [-c passchars]\n"
+                "           [-f fontname]\n"
+                "           [-xshift horizontal shift]\n"
+                "           [-fg fg]\n"
+                "           [-bg bg]\n"
+                "           [-errorbg errorbg]\n"
+                "           [-timeout wrong password timeout]\n"
+                "           [-randchars no. of random chars to display]\n"
+            );
     }
 
     // fill with password characters
