@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <termios.h>
 #include <fontconfig/fontconfig.h>
+#include <time.h>
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -101,6 +102,7 @@ main(int argc, char **argv) {
     int showusername = 1;
     int xshift = 0;
     int daemon = 0;
+    int randchars = 0;
     char* normal_bg_color = "black";
     char* error_bg_color = "orange red";
     char* fg_color = "white";
@@ -130,7 +132,13 @@ main(int argc, char **argv) {
         else if (!strcmp(argv[i], "-d"))
             daemon = 1;
 
-        else if (!strcmp(argv[i], "-xshift")) {
+        else if (!strcmp(argv[i], "-randchars")) {
+            if (i+1 == argc)
+                die("error: missing randchars value\n");
+            randchars = atoi(argv[i + 1]);
+            srand(time(NULL));
+
+        } else if (!strcmp(argv[i], "-xshift")) {
             if (i+1 == argc)
                 die("error: missing xshift value\n");
             xshift = atoi(argv[i + 1]);
@@ -250,6 +258,8 @@ main(int argc, char **argv) {
 
         if (update) {
             int x, y, dir, ascent, descent;
+            unsigned int disp_len = randchars ? randchars : len;
+            char* offset = passdisp + (randchars ? (rand() % (sizeof(passdisp) - disp_len)) : 0);
             XCharStruct overall;
 
             XClearWindow(dpy, w);
@@ -258,8 +268,8 @@ main(int argc, char **argv) {
 
             if (showline)
                 XDrawLine(dpy, w, gc, width * 3 / 8 , height / 2, width * 5 / 8, height / 2);
-            XftTextExtentsUtf8(dpy, font, (XftChar8 *)passdisp, len, &extents);
-            XftDrawStringUtf8(xftdraw, &xftcolor, font, (width - extents.width) / 2, (height+42) / 2, (XftChar8 *)passdisp, len);
+            XftTextExtentsUtf8(dpy, font, (XftChar8 *)offset, disp_len, &extents);
+            XftDrawStringUtf8(xftdraw, &xftcolor, font, (width - extents.width) / 2, (height+42) / 2, (XftChar8 *)offset, disp_len);
             update = False;
         }
 
