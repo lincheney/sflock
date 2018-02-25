@@ -81,7 +81,7 @@ main(int argc, char **argv) {
     KeySym ksym;
     Pixmap pmap;
     Window root, w;
-    XColor normal_bg, error_bg, dummy;
+    XColor fg, normal_bg, error_bg, dummy;
     XEvent ev;
     XSetWindowAttributes wa;
     XFontStruct* font;
@@ -98,6 +98,7 @@ main(int argc, char **argv) {
     int daemon = 0;
     char* normal_bg_color = "black";
     char* error_bg_color = "orange red";
+    char* fg_color = "white";
 
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "-c")) {
@@ -121,15 +122,20 @@ main(int argc, char **argv) {
         else if (!strcmp(argv[i], "-u"))
             showusername = 0;
 
+        else if (!strcmp(argv[i], "-d"))
+            daemon = 1;
+
         else if (!strcmp(argv[i], "-xshift")) {
             if (i+1 == argc)
                 die("error: missing xshift value\n");
             xshift = atoi(argv[i + 1]);
 
-        } else if (!strcmp(argv[i], "-d"))
-            daemon = 1;
+        } else if (!strcmp(argv[i], "-fg")) {
+            if (i+1 == argc)
+                die("error: missing fg value\n");
+            fg_color = argv[i + 1];
 
-        else if (!strcmp(argv[i], "-bg")) {
+        } else if (!strcmp(argv[i], "-bg")) {
             if (i+1 == argc)
                 die("error: missing bg value\n");
             normal_bg_color = argv[i + 1];
@@ -184,6 +190,7 @@ main(int argc, char **argv) {
 
     XAllocNamedColor(dpy, DefaultColormap(dpy, screen), error_bg_color, &error_bg, &dummy);
     XAllocNamedColor(dpy, DefaultColormap(dpy, screen), normal_bg_color, &normal_bg, &dummy);
+    XAllocNamedColor(dpy, DefaultColormap(dpy, screen), fg_color, &fg, &dummy);
 
     wa.override_redirect = 1;
     wa.background_pixel = normal_bg.pixel;
@@ -204,7 +211,7 @@ main(int argc, char **argv) {
 
     gc = XCreateGC(dpy, w, (unsigned long)0, &values);
     XSetFont(dpy, gc, font->fid);
-    XSetForeground(dpy, gc, XWhitePixel(dpy, screen));
+    XSetForeground(dpy, gc, fg.pixel);
 
     for(len = 1000; len; len--) {
         if(XGrabPointer(dpy, root, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
